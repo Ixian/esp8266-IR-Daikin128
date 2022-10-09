@@ -1,0 +1,68 @@
+esphome:
+  name: garage-ac-diy
+  platform: ESP8266
+  board: espmxdevkit
+  includes: 
+    - daikin_ir.h
+  libraries:
+    - IRremoteESP8266
+
+# Enable logging
+logger:
+#  level: verbose
+# Enable Home Assistant API
+api:
+
+ota:
+  password: !secret ota_password
+
+# Create a switch for safe_mode in order to flash the device
+# Solution from this thread:
+# https://community.home-assistant.io/t/esphome-flashing-over-wifi-does-not-work/357352/1
+switch:
+  - platform: safe_mode
+    name: "Flash Mode (Safe Mode)"
+
+wifi:
+  networks:
+  - ssid: !secret wifi_ssid_iot
+    password: !secret wifi_ssid_iot_pass
+  reboot_timeout: 15min
+  fast_connect: true
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Garage-Ac-Diy Fallback Hotspot"
+    password: !secret fallback_ssid_password
+
+captive_portal:
+
+# external_components:
+  # - source:
+      # type: git
+      # url: https://github.com/hagak/esphome
+      # ref: dev
+    # components: [ daikin_brc ]
+    # refresh: 0s
+
+sensor:
+  - platform: homeassistant
+    name: "Current temperature"
+    entity_id: sensor.air_quality_meter_temperature
+    id: temp
+    filters:
+      - offset: -2.0
+      - lambda: return (x - 32.0) * (5.0/9.0);
+    internal: true
+    unit_of_measurement: °C
+
+climate:
+ - platform: custom
+   lambda: |-
+     auto daikinac = new DaikinAC();
+     daikinac->set_sensor(id(temp));
+     App.register_component(daikinac);
+     return {daikinac};
+
+   climates:
+     - name: "Daikin TEST AC"
