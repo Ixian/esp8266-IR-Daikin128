@@ -27,7 +27,7 @@ class DaikinAC : public Component, public Climate {
       }
 
     ac.begin();
-    ac.setPowerToggle(false);
+    // ac.setPowerToggle(false);
     ac.setTemp(21);
     ac.setFan(kDaikinFanAuto);
     ac.setMode(kDaikinCool);
