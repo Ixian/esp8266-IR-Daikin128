@@ -114,10 +114,9 @@ class DaikinAC : public Component, public Climate {
     }
   // Power Toggle function - testing
   void setPowerState() {
-    if(ac.getPowerToggle() == true){
-       ac.setPowerToggle(false);
+    if(ac.getPowerToggle() != true){
+       ac.setPowerToggle(true);
     }
-    else ac.setPowerToggle(true);
   }
 //Code for what to do when the mode of the AC is changed on the dashboard
   void control(const ClimateCall &call) override {
@@ -125,7 +124,7 @@ class DaikinAC : public Component, public Climate {
       ClimateMode mode = *call.get_mode();
 //For each mode, need to find the relevant mode from the list of constants. This list can be found in the relevant .h library from IRremoteESP8266 library. In this case the file is "ir_Hitachi.h". Typically the function should be the same - .setMode. However, best check the relevant .h library.       
       if (mode == CLIMATE_MODE_OFF) {
-        ac.setPowerToggle(true);
+        ac.setPowerToggle(false);
       } else if (mode == CLIMATE_MODE_AUTO) {
         setPowerState();
         ac.setMode(kDaikin128Auto);
