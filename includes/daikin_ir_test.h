@@ -1,11 +1,13 @@
 #include "esphome.h"
 #include "IRremoteESP8266.h"
 #include "IRsend.h"
+#include <IRrecv.h>
 #include "ir_Daikin.h"
 
 ///This code is relevant for cases where the IR control for an AC is available in IRremoteESP8266, but isn't supported yet in Esphome
 
-const uint16_t kIrLed = 0; // ESP8266 GPIO pin to use. Recommended: 0 (D3).
+const uint16_t kIrLed = 0; // ESP8266 GPIO pin to use for transmitter bulb. Recommended: 0 (D3).
+const uint16_t kIrRecvPin = 12; // ESP8266 GPIO pin for receiver
 IRDaikin128 ac(kIrLed);
 
 // Setup files. This is the equivalent of the code written in the setup loop of Arduino
