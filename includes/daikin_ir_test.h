@@ -3,9 +3,12 @@
 #include "IRsend.h"
 #include "ir_Daikin.h"
 
-const uint16_t kIrLed = 0;
+///This code is relevant for cases where the IR control for an AC is available in IRremoteESP8266, but isn't supported yet in Esphome
+
+const uint16_t kIrLed = 0; // ESP8266 GPIO pin to use. Recommended: 0 (D3).
 IRDaikin128 ac(kIrLed);
 
+// Setup files. This is the equivalent of the code written in the setup loop of Arduino
 class DaikinAC : public Component, public Climate {
   public:
     sensor::Sensor *sensor_{nullptr};
@@ -77,7 +80,7 @@ class DaikinAC : public Component, public Climate {
       ESP_LOGD("DEBUG", "Daikin A/C remote is in the following state:");
       ESP_LOGD("DEBUG", "  %s\n", ac.toString().c_str());
     }
-
+// Traits: This tells home assistant what "traits" are supported by AC in terms of heating/cooling/fan speeds/swing modes. These are used by Home Assistant to customize the AC card on the dashboard
     climate::ClimateTraits traits() {
       auto traits = climate::ClimateTraits();
       traits.set_supported_modes({
@@ -114,9 +117,11 @@ class DaikinAC : public Component, public Climate {
     }
     else ac.setPowerToggle(true);
   }
+//Code for what to do when the mode of the AC is changed on the dashboard
   void control(const ClimateCall &call) override {
     if (call.get_mode().has_value()) {
       ClimateMode mode = *call.get_mode();
+//For each mode, need to find the relevant mode from the list of constants. This list can be found in the relevant .h library from IRremoteESP8266 library. In this case the file is "ir_Hitachi.h". Typically the function should be the same - .setMode. However, best check the relevant .h library.       
       if (mode == CLIMATE_MODE_OFF) {
         ac.setPowerToggle(true);
       } else if (mode == CLIMATE_MODE_AUTO) {
