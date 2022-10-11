@@ -103,7 +103,7 @@ class DaikinAC : public Component, public Climate {
       ESP_LOGD("DEBUG", "Daikin A/C remote is in the following state:");
       ESP_LOGD("DEBUG", "  %s\n", ac.toString().c_str());
     }
-// Traits: This tells home assistant what "traits" are supported by AC in terms of heating/cooling/fan speeds/swing modes. These are used by Home Assistant to customize the AC card on the dashboard
+   // Traits: This tells home assistant what "traits" are supported by AC in terms of heating/cooling/fan speeds/swing modes. These are used by Home Assistant to customize the AC card on the dashboard
     climate::ClimateTraits traits() {
       auto traits = climate::ClimateTraits();
       traits.set_supported_modes({
@@ -135,11 +135,11 @@ class DaikinAC : public Component, public Climate {
       return traits;
     }
 
-//Code for what to do when the mode of the AC is changed on the dashboard
+  //Code for what to do when the mode of the AC is changed on the dashboard
   void control(const ClimateCall &call) override {
     if (call.get_mode().has_value()) {
       ClimateMode mode = *call.get_mode();
-//For each mode, need to find the relevant mode from the list of constants. This list can be found in the relevant .h library from IRremoteESP8266 library. In this case the file is "ir_Hitachi.h". Typically the function should be the same - .setMode. However, best check the relevant .h library.       
+  //For each mode, need to find the relevant mode from the list of constants. This list can be found in the relevant .h library from IRremoteESP8266 library. In this case the file is "ir_Hitachi.h". Typically the function should be the same - .setMode. However, best check the relevant .h library.       
       if (mode == CLIMATE_MODE_OFF) {
         togglePowerOff();
       } else if (mode == CLIMATE_MODE_AUTO) {
@@ -201,6 +201,5 @@ class DaikinAC : public Component, public Climate {
 
     ESP_LOGD("DEBUG", "Daikin A/C remote is in the following state:");
     ESP_LOGD("DEBUG", "  %s\n", ac.toString().c_str());
-   // ESP_LOGD("DEBUG", ac.getPowerToggle(), ac.toString().c_str());
   }
 };
