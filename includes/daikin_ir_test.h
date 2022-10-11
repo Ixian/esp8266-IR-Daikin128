@@ -15,19 +15,26 @@ IRDaikin128 ac(kIrLed);
 class DaikinAC : public Component, public Climate {
   public:
     sensor::Sensor *sensor_{nullptr};
+    
+    // Power Toggle inline functions - testing
+    void togglePowerOn() {
+      if(ac.getPowerToggle() != true){
+         ac.setPowerToggle(true);
+         else {
+          ac.setPowerToggle();
+          }
+      }
+    }
+    void togglePowerOff() {
+      if(ac.getPowerToggle() != false){
+        ac.setPowerToggle(false);
+      }
+    }
 
     void set_sensor(sensor::Sensor *sensor) { this->sensor_ = sensor; }
 
     void setup() override
     {
-      // Set initial state
-      ac.begin();
-    //  ac.setPowerToggle(false);
-      ac.setTemp(21);
-      ac.setFan (kDaikin128FanAuto);
-      ac.setMode (kDaikin128Auto);
-      ac.setSwingVertical(false);
-      // Add in temp sensor from ESPHome
       if (this->sensor_) {
         this->sensor_->add_on_state_callback([this](float state) {
           this->current_temperature = state;
@@ -38,20 +45,63 @@ class DaikinAC : public Component, public Climate {
         this->current_temperature = NAN;
       }
 
-       auto restore = this->restore_state_();
-       if (restore.has_value()) {
-         restore->apply(this);
-       } else {
-         this->mode = climate::CLIMATE_MODE_OFF;
-         this->target_temperature = roundf(clamp(this->current_temperature, 18.0f, 30.0f));
-         this->fan_mode = climate::CLIMATE_FAN_AUTO;
-         this->swing_mode = climate::CLIMATE_SWING_OFF;
-       }
+      auto restore = this->restore_state_();
+      if (restore.has_value()) {
+        restore->apply(this);
+      } else {
+        this->mode = climate::CLIMATE_MODE_OFF;
+        this->target_temperature = roundf(clamp(this->current_temperature, 18.0f, 30.0f));
+        this->fan_mode = climate::CLIMATE_FAN_AUTO;
+        this->swing_mode = climate::CLIMATE_SWING_OFF;
+      }
 
       if (isnan(this->target_temperature)) {
         this->target_temperature = 23;
       }
 
+      ac.begin();
+      ac.setPowerToggle(true);
+      if (this->mode == CLIMATE_MODE_OFF) {
+        togglePowerOff();
+      } else if (this->mode == CLIMATE_MODE_AUTO) {
+        togglePowerOn();
+        ac.setMode(kDaikin128Auto);
+      } else if (this->mode == CLIMATE_MODE_COOL) {
+        togglePowerOn();
+        ac.setMode(kDaikin128Cool);
+      } else if (this->mode == CLIMATE_MODE_HEAT) {
+        togglePowerOn();
+        ac.setMode(kDaikin128Heat);
+      } else if (this->mode == CLIMATE_MODE_FAN_ONLY) {
+        togglePowerOn();
+        ac.setMode(kDaikin128Fan);
+      } else if (this->mode == CLIMATE_MODE_DRY) {
+        togglePowerOn();
+        ac.setMode(kDaikin128Dry);
+      }
+      ac.setTemp(this->target_temperature);
+      if (this->fan_mode == CLIMATE_FAN_AUTO) {
+        ac.setFan(kDaikin128FanAuto);
+      } else if (this->fan_mode == CLIMATE_FAN_LOW) {
+        ac.setFan(kDaikin128FanLow);
+      } else if (this->fan_mode == CLIMATE_FAN_MEDIUM) {
+        ac.setFan(kDaikin128FanMed);
+      } else if (this->fan_mode == CLIMATE_FAN_HIGH) {
+        ac.setFan(kDaikin128FanHigh);
+      } else if (this->fan_mode == CLIMATE_FAN_FOCUS) {
+        ac.setFan(kDaikin128FanPowerful);
+      } else if (this->fan_mode == CLIMATE_FAN_DIFFUSE) {
+        ac.setFan(kDaikin128FanQuiet);
+      }
+      if (this->swing_mode == CLIMATE_SWING_OFF) {
+        ac.setSwingVertical(false);
+      } else if (this->swing_mode == CLIMATE_SWING_VERTICAL) {
+        ac.setSwingVertical(true);
+      }
+      ac.send();
+
+      ESP_LOGD("DEBUG", "Daikin A/C remote is in the following state:");
+      ESP_LOGD("DEBUG", "  %s\n", ac.toString().c_str());
     }
 // Traits: This tells home assistant what "traits" are supported by AC in terms of heating/cooling/fan speeds/swing modes. These are used by Home Assistant to customize the AC card on the dashboard
     climate::ClimateTraits traits() {
@@ -83,17 +133,6 @@ class DaikinAC : public Component, public Climate {
       traits.set_visual_temperature_step(1);
 
       return traits;
-    }
-  // Power Toggle function - testing
-  void togglePowerOn() {
-    if(ac.getPowerToggle() != true){
-       ac.setPowerToggle(true);
-    }
-  }
-
-  void togglePowerOff() {
-       ac.setPowerToggle(true);
-       ac.setPowerToggle(false);
     }
 
 //Code for what to do when the mode of the AC is changed on the dashboard
