@@ -1,7 +1,7 @@
 #include "esphome.h"
 #include "IRremoteESP8266.h"
 #include "IRsend.h"
-#include <IRrecv.h>
+#include "IRrecv.h"
 #include "ir_Daikin.h"
 
 ///This code is relevant for cases where the IR control for an AC is available in IRremoteESP8266, but isn't supported yet in Esphome
