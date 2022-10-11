@@ -134,7 +134,7 @@ class DaikinAC : public Component, public Climate {
       ClimateMode mode = *call.get_mode();
   //For each mode, need to find the relevant mode from the list of constants. This list can be found in the relevant .h library from IRremoteESP8266 library. In this case the file is "ir_Hitachi.h". Typically the function should be the same - .setMode. However, best check the relevant .h library.       
       if (mode == CLIMATE_MODE_OFF) {
-        togglePowerOff();
+        ac.setPowerToggle(true);
       } else if (mode == CLIMATE_MODE_AUTO) {
         togglePowerOn();
         ac.setMode(kDaikin128Auto);
