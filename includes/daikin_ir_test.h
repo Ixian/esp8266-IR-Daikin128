@@ -20,9 +20,6 @@ class DaikinAC : public Component, public Climate {
     void togglePowerOn() {
       if(ac.getPowerToggle() != true){
          ac.setPowerToggle(true);
-        } else {
-          ac.setPowerToggle();
-          }
       }
     }
     void togglePowerOff() {
