@@ -1,5 +1,5 @@
 esphome:
-  name: garage-ac-diy
+  name: garage-mini-split
   platform: ESP8266
   board: espmxdevkit
   includes: 
@@ -32,18 +32,10 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Garage-Ac-Diy Fallback Hotspot"
+    ssid: "mini-split Fallback Hotspot"
     password: !secret fallback_ssid_password
 
 captive_portal:
-
-# external_components:
-  # - source:
-      # type: git
-      # url: https://github.com/hagak/esphome
-      # ref: dev
-    # components: [ daikin_brc ]
-    # refresh: 0s
 
 sensor:
   - platform: homeassistant
