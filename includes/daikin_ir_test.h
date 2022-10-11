@@ -10,6 +10,7 @@ const uint16_t kIrLed = 0; // ESP8266 GPIO pin to use for transmitter bulb. Reco
 const uint16_t kIrRecvPin = 12; // ESP8266 GPIO pin for receiver
 IRDaikin128 ac(kIrLed);
 
+
 // Setup files. This is the equivalent of the code written in the setup loop of Arduino
 class DaikinAC : public Component, public Climate {
   public:
@@ -19,6 +20,14 @@ class DaikinAC : public Component, public Climate {
 
     void setup() override
     {
+      // Set initial state
+      ac.begin();
+    //  ac.setPowerToggle(false);
+      ac.setTemp(21);
+      ac.setFan (kDaikin128FanAuto);
+      ac.setMode (kDaikin128Auto);
+      ac.setSwingVertical(false);
+      // Add in temp sensor from ESPHome
       if (this->sensor_) {
         this->sensor_->add_on_state_callback([this](float state) {
           this->current_temperature = state;
@@ -29,63 +38,26 @@ class DaikinAC : public Component, public Climate {
         this->current_temperature = NAN;
       }
 
-      auto restore = this->restore_state_();
-      if (restore.has_value()) {
-        restore->apply(this);
-      } else {
-        this->mode = climate::CLIMATE_MODE_OFF;
-        this->target_temperature = roundf(clamp(this->current_temperature, 18.0f, 30.0f));
-        this->fan_mode = climate::CLIMATE_FAN_AUTO;
-        this->swing_mode = climate::CLIMATE_SWING_OFF;
-      }
+       auto restore = this->restore_state_();
+       if (restore.has_value()) {
+         restore->apply(this);
+       } else {
+         this->mode = climate::CLIMATE_MODE_OFF;
+         this->target_temperature = roundf(clamp(this->current_temperature, 18.0f, 30.0f));
+         this->fan_mode = climate::CLIMATE_FAN_AUTO;
+         this->swing_mode = climate::CLIMATE_SWING_OFF;
+       }
 
       if (isnan(this->target_temperature)) {
         this->target_temperature = 23;
       }
 
-      ac.begin();
-      // ac.on();
-      if (this->mode == CLIMATE_MODE_OFF) {
-        ac.setPowerToggle(true);
-      } else if (this->mode == CLIMATE_MODE_AUTO) {
-        ac.setMode(kDaikin128Auto);
-      } else if (this->mode == CLIMATE_MODE_COOL) {
-        ac.setMode(kDaikin128Cool);
-      } else if (this->mode == CLIMATE_MODE_HEAT) {
-        ac.setMode(kDaikin128Heat);
-      } else if (this->mode == CLIMATE_MODE_FAN_ONLY) {
-        ac.setMode(kDaikin128Fan);
-      } else if (this->mode == CLIMATE_MODE_DRY) {
-        ac.setMode(kDaikin128Dry);
-      }
-      ac.setTemp(this->target_temperature);
-      if (this->fan_mode == CLIMATE_FAN_AUTO) {
-        ac.setFan(kDaikin128FanAuto);
-      } else if (this->fan_mode == CLIMATE_FAN_LOW) {
-        ac.setFan(kDaikin128FanLow);
-      } else if (this->fan_mode == CLIMATE_FAN_MEDIUM) {
-        ac.setFan(kDaikin128FanMed);
-      } else if (this->fan_mode == CLIMATE_FAN_HIGH) {
-        ac.setFan(kDaikin128FanHigh);
-      } else if (this->fan_mode == CLIMATE_FAN_FOCUS) {
-        ac.setFan(kDaikin128FanPowerful);
-      } else if (this->fan_mode == CLIMATE_FAN_DIFFUSE) {
-        ac.setFan(kDaikin128FanQuiet);
-      }
-      if (this->swing_mode == CLIMATE_SWING_OFF) {
-        ac.setSwingVertical(false);
-      } else if (this->swing_mode == CLIMATE_SWING_VERTICAL) {
-        ac.setSwingVertical(true);
-      }
-      ac.send();
-
-      ESP_LOGD("DEBUG", "Daikin A/C remote is in the following state:");
-      ESP_LOGD("DEBUG", "  %s\n", ac.toString().c_str());
     }
 // Traits: This tells home assistant what "traits" are supported by AC in terms of heating/cooling/fan speeds/swing modes. These are used by Home Assistant to customize the AC card on the dashboard
     climate::ClimateTraits traits() {
       auto traits = climate::ClimateTraits();
       traits.set_supported_modes({
+          climate::CLIMATE_MODE_OFF,
           climate::CLIMATE_MODE_AUTO,
           climate::CLIMATE_MODE_COOL,
           climate::CLIMATE_MODE_HEAT,
@@ -113,32 +85,38 @@ class DaikinAC : public Component, public Climate {
       return traits;
     }
   // Power Toggle function - testing
-  void setPowerState() {
+  void togglePowerOn() {
     if(ac.getPowerToggle() != true){
        ac.setPowerToggle(true);
     }
   }
+
+  void togglePowerOff() {
+       ac.setPowerToggle(true);
+       ac.setPowerToggle(false);
+    }
+
 //Code for what to do when the mode of the AC is changed on the dashboard
   void control(const ClimateCall &call) override {
     if (call.get_mode().has_value()) {
       ClimateMode mode = *call.get_mode();
 //For each mode, need to find the relevant mode from the list of constants. This list can be found in the relevant .h library from IRremoteESP8266 library. In this case the file is "ir_Hitachi.h". Typically the function should be the same - .setMode. However, best check the relevant .h library.       
       if (mode == CLIMATE_MODE_OFF) {
-        ac.setPowerToggle(false);
+        togglePowerOff();
       } else if (mode == CLIMATE_MODE_AUTO) {
-        setPowerState();
+        togglePowerOn();
         ac.setMode(kDaikin128Auto);
       } else if (mode == CLIMATE_MODE_COOL) {
-        setPowerState();
+        togglePowerOn();
         ac.setMode(kDaikin128Cool);
       } else if (mode == CLIMATE_MODE_HEAT) {
-        setPowerState();
+        togglePowerOn();
         ac.setMode(kDaikin128Heat);
       } else if (mode == CLIMATE_MODE_FAN_ONLY) {
-        setPowerState();
+        togglePowerOn();
         ac.setMode(kDaikin128Fan);
       } else if (mode == CLIMATE_MODE_DRY) {
-        setPowerState();
+        togglePowerOn();
         ac.setMode(kDaikin128Dry);
       }
       this->mode = mode;
@@ -184,5 +162,6 @@ class DaikinAC : public Component, public Climate {
 
     ESP_LOGD("DEBUG", "Daikin A/C remote is in the following state:");
     ESP_LOGD("DEBUG", "  %s\n", ac.toString().c_str());
+   // ESP_LOGD("DEBUG", ac.getPowerToggle(), ac.toString().c_str());
   }
 };
