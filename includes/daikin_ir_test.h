@@ -13,16 +13,8 @@ IRDaikin128 ac(kIrLed);
 // Setup files. This is the equivalent of the code written in the setup loop of Arduino
 class DaikinAC : public Component, public Climate {
   public:
+  // Start by importing temp. sensor from Home Assistant (Defined in ESPHome Yaml)
     sensor::Sensor *sensor_{nullptr};
-    
-    // Power Toggle inline functions - testing
-    void togglePowerOn() {
-      if (this->mode == CLIMATE_MODE_OFF) {
-         ac.setPowerToggle(true);
-         } else {
-           ac.setPowerToggle(false);
-      }
-    }
 
     void set_sensor(sensor::Sensor *sensor) { this->sensor_ = sensor; }
 
@@ -51,6 +43,15 @@ class DaikinAC : public Component, public Climate {
       if (isnan(this->target_temperature)) {
         this->target_temperature = 23;
       }
+
+    // Power Toggle inline functions - testing
+    void togglePowerOn() {
+      if (this->mode == CLIMATE_MODE_OFF) {
+         ac.setPowerToggle(true);
+         } else {
+           ac.setPowerToggle(false);
+      }
+    }
 
       ac.begin();
       if (this->mode == CLIMATE_MODE_OFF) {
