@@ -7,7 +7,7 @@
 ///This code is relevant for cases where the IR control for an AC is available in IRremoteESP8266, but isn't supported yet in Esphome
 
 const uint16_t kIrLed = 0; // ESP8266 GPIO pin to use for transmitter bulb. Recommended: 0 (D3).
-const uint16_t kIrRecvPin = 12; // ESP8266 GPIO pin for receiver
+// const uint16_t kIrRecvPin = 12; // For future testing - ESP8266 GPIO pin for receiver
 IRDaikin128 ac(kIrLed);
 
 
@@ -18,13 +18,10 @@ class DaikinAC : public Component, public Climate {
     
     // Power Toggle inline functions - testing
     void togglePowerOn() {
-      if(ac.getPowerToggle() != true){
+      if (this->mode == CLIMATE_MODE_OFF) {
          ac.setPowerToggle(true);
-      }
-    }
-    void togglePowerOff() {
-      if(ac.getPowerToggle() != false){
-        ac.setPowerToggle(false);
+         } else {
+           ac.setPowerToggle(false);
       }
     }
 
@@ -57,9 +54,8 @@ class DaikinAC : public Component, public Climate {
       }
 
       ac.begin();
-      ac.setPowerToggle(true);
       if (this->mode == CLIMATE_MODE_OFF) {
-        togglePowerOff();
+        ac.setPowerToggle(true);
       } else if (this->mode == CLIMATE_MODE_AUTO) {
         togglePowerOn();
         ac.setMode(kDaikin128Auto);
