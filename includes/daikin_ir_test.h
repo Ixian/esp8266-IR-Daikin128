@@ -10,7 +10,6 @@ const uint16_t kIrLed = 0; // ESP8266 GPIO pin to use for transmitter bulb. Reco
 // const uint16_t kIrRecvPin = 12; // For future testing - ESP8266 GPIO pin for receiver
 IRDaikin128 ac(kIrLed);
 
-
 // Setup files. This is the equivalent of the code written in the setup loop of Arduino
 class DaikinAC : public Component, public Climate {
   public:
@@ -74,16 +73,22 @@ class DaikinAC : public Component, public Climate {
       }
       ac.setTemp(this->target_temperature);
       if (this->fan_mode == CLIMATE_FAN_AUTO) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanAuto);
       } else if (this->fan_mode == CLIMATE_FAN_LOW) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanLow);
       } else if (this->fan_mode == CLIMATE_FAN_MEDIUM) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanMed);
       } else if (this->fan_mode == CLIMATE_FAN_HIGH) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanHigh);
       } else if (this->fan_mode == CLIMATE_FAN_FOCUS) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanPowerful);
       } else if (this->fan_mode == CLIMATE_FAN_DIFFUSE) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanQuiet);
       }
       if (this->swing_mode == CLIMATE_SWING_OFF) {
@@ -163,16 +168,22 @@ class DaikinAC : public Component, public Climate {
     if (call.get_fan_mode().has_value()) {
       ClimateFanMode fan_mode = *call.get_fan_mode();
       if (fan_mode == CLIMATE_FAN_AUTO) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanAuto);
       } else if (fan_mode == CLIMATE_FAN_LOW) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanLow);
       } else if (fan_mode == CLIMATE_FAN_MEDIUM) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanMed);
       } else if (fan_mode == CLIMATE_FAN_HIGH) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanHigh);
       } else if (fan_mode == CLIMATE_FAN_FOCUS) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanPowerful);
       } else if (fan_mode == CLIMATE_FAN_DIFFUSE) {
+        togglePowerOn();
         ac.setFan(kDaikin128FanQuiet);
       }
       this->fan_mode = fan_mode;
