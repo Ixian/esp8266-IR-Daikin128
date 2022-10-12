@@ -20,7 +20,6 @@ class DaikinAC : public Component, public Climate {
     void togglePowerOn() {
       if (this->mode == CLIMATE_MODE_OFF) {
          ac.setPowerToggle(true);
-         ac.setPowerToggle(false);
          } else {
            ac.setPowerToggle(false);
       }
@@ -94,8 +93,10 @@ class DaikinAC : public Component, public Climate {
         ac.setFan(kDaikin128FanQuiet);
       }
       if (this->swing_mode == CLIMATE_SWING_OFF) {
+        togglePowerOn();
         ac.setSwingVertical(false);
       } else if (this->swing_mode == CLIMATE_SWING_VERTICAL) {
+        togglePowerOn();
         ac.setSwingVertical(true);
       }
       ac.send();
@@ -163,6 +164,7 @@ class DaikinAC : public Component, public Climate {
 
     if (call.get_target_temperature().has_value()) {
       float temp = *call.get_target_temperature();
+      togglePowerOn();
       ac.setTemp(temp);
       this->target_temperature = temp;
     }
@@ -194,8 +196,10 @@ class DaikinAC : public Component, public Climate {
     if (call.get_swing_mode().has_value()) {
       ClimateSwingMode swing_mode = *call.get_swing_mode();
       if (swing_mode == CLIMATE_SWING_OFF) {
+        togglePowerOn();
         ac.setSwingVertical(false);
       } else if (swing_mode == CLIMATE_SWING_VERTICAL) {
+        togglePowerOn();
         ac.setSwingVertical(true);
       }
       this->swing_mode = swing_mode;
