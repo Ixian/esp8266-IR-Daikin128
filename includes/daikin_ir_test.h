@@ -16,14 +16,10 @@ class DaikinAC : public Component, public Climate {
   // Start by importing temp. sensor from Home Assistant (Defined in ESPHome Yaml)
     sensor::Sensor *sensor_{nullptr};
 
-    // Power Toggle inline functions - testing
-    void togglePowerOn() {
-      if (this->mode == CLIMATE_MODE_OFF) {
-         ac.setPowerToggle(true);
-         } else {
-           ac.setPowerToggle(false);
+    // Insure correct power state is sent based on previous state
+    void togglePowerOn(void) {
+        ac.setPowerToggle(this->mode == CLIMATE_MODE_OFF);
       }
-    }
 
     void set_sensor(sensor::Sensor *sensor) { this->sensor_ = sensor; }
 
